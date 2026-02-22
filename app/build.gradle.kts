@@ -58,6 +58,7 @@ dependencies {
     // Core Android
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
     implementation("androidx.activity:activity-compose:1.8.2")
     
     // Compose
@@ -69,9 +70,6 @@ dependencies {
     
     // ML Kit Digital Ink Recognition
     implementation("com.google.mlkit:digital-ink-recognition:18.1.0")
-    
-    // MathView for LaTeX rendering
-    implementation("io.github.kexanie.library:MathView:0.0.6")
     
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
