@@ -2,6 +2,22 @@
 
 An Android app that converts handwritten math equations to LaTeX in real-time with comprehensive symbol support.
 
+## Download APK
+
+**[Download MathDraw v1.0 (49MB)](releases/MathDraw-v1.0-debug.apk)**
+
+### Installation
+1. Download the APK file from the link above
+2. Enable "Install from Unknown Sources" in your Android settings
+3. Open the APK file and install
+4. On first launch, the app will download the ML Kit math model (~15MB, requires internet)
+5. After model download, the app works offline
+
+### Requirements
+- Android 7.0 (API 24) or higher
+- ~65MB free storage (app + model)
+- Internet connection for first launch only
+
 ## Features
 - **Real-time handwriting recognition** using Google ML Kit's specialized math model
 - **Comprehensive symbol detection** - recognizes ANY mathematical symbol
@@ -56,11 +72,18 @@ sin, cos, tan, cot, sec, csc, arcsin, arccos, arctan, sinh, cosh, tanh, log, ln
 - Jetpack Compose for UI
 - Custom LaTeX converter with 150+ symbols
 
-## Setup
-1. Open project in Android Studio
-2. Sync Gradle
-3. Run on Android device or emulator (Android 7.0+ / API 24+)
-4. App will download ML Kit math model on first launch (requires internet)
+## Development Setup
+1. Clone this repository
+2. Open project in Android Studio
+3. Sync Gradle
+4. Run on Android device or emulator (Android 7.0+ / API 24+)
+5. App will download ML Kit math model on first launch (requires internet)
+
+For detailed build instructions, see [QUICKSTART.md](QUICKSTART.md)
+
+## Documentation
+- [Symbol Reference](SYMBOLS.md) - Complete list of all 150+ supported symbols
+- [Quick Start Guide](QUICKSTART.md) - Build and development instructions
 
 ## Usage
 1. Write math equations or symbols on the canvas
