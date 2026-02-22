@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 android {
@@ -67,9 +68,28 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material:material-icons-extended")
     
     // ML Kit Digital Ink Recognition
     implementation("com.google.mlkit:digital-ink-recognition:18.1.0")
+    
+    // ML Kit Text Recognition (OCR for reading printed math)
+    implementation("com.google.mlkit:text-recognition:16.0.0")
+    
+    // CameraX for taking photos
+    implementation("androidx.camera:camera-camera2:1.3.1")
+    implementation("androidx.camera:camera-lifecycle:1.3.1")
+    implementation("androidx.camera:camera-view:1.3.1")
+    
+    // Coil for image loading
+    implementation("io.coil-kt:coil-compose:2.5.0")
+    
+    // Gemini Nano / MediaPipe for on-device AI
+    // Note: This requires Google AI Edge SDK
+    implementation("com.google.ai.edge:generativeai:0.1.2")
+    
+    // JSON handling
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
     
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
