@@ -86,7 +86,8 @@ dependencies {
     
     // Gemini Nano / MediaPipe for on-device AI
     // Note: This requires Google AI Edge SDK
-    implementation("com.google.ai.edge:generativeai:0.1.2")
+    // Commented out until ready to implement - library version not yet available
+    // implementation("com.google.ai.edge:generativeai:0.1.2")
     
     // JSON handling
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")

@@ -4,7 +4,7 @@ An AI-powered Android app that helps you solve math problems from textbooks with
 
 ## Download APK
 
-**[Download Math Tutor AI v2.0 (Coming Soon)](releases/)**
+**[Download Math Tutor AI v2.0 (96MB)](releases/MathDraw-v2.0-debug.apk)**
 
 *v1.0 with basic handwriting recognition: [Download here](releases/MathDraw-v1.0-debug.apk)*
 
