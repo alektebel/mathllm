@@ -3,7 +3,8 @@
 local.properties
 *.iml
 build/
-*.apk
+# Allow APKs in releases folder
+# *.apk
 *.ap_
 *.dex
 *.class
