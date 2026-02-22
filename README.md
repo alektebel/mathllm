@@ -4,9 +4,11 @@ An AI-powered Android app that helps you solve math problems from textbooks with
 
 ## Download APK
 
-**[Download Math Tutor AI v2.0 (96MB)](releases/MathDraw-v2.0-debug.apk)**
+**[Download Math Tutor AI v2.1 (96MB) - WITH FULL AI FEATURES](releases/MathDraw-v2.1-debug.apk)** ⭐ LATEST
 
-*v1.0 with basic handwriting recognition: [Download here](releases/MathDraw-v1.0-debug.apk)*
+*Previous versions:*
+- *v2.0 (96MB) - Basic framework: [Download](releases/MathDraw-v2.0-debug.apk)*
+- *v1.0 (49MB) - Handwriting only: [Download](releases/MathDraw-v1.0-debug.apk)*
 
 ### Installation
 1. Download the APK file
@@ -77,11 +79,30 @@ An AI-powered Android app that helps you solve math problems from textbooks with
 ```
 
 ## Features
+
+### 🎯 Core Features
 - **Real-time handwriting recognition** using Google ML Kit's specialized math model
-- **Comprehensive symbol detection** - recognizes ANY mathematical symbol
+- **Comprehensive symbol detection** - recognizes 150+ mathematical symbols
 - **Automatic LaTeX conversion** with proper formatting
 - **Smart pattern recognition** for fractions, exponents, subscripts, roots, and more
-- Clear and undo functionality
+- **Camera capture** - Take photos of problems from textbooks
+- **OCR text extraction** - Automatically reads printed equations
+
+### 🤖 AI Validation (v2.1)
+- **Real algebraic validation** - Checks if each step is mathematically correct
+- **Error detection** - Identifies sign errors, calculation mistakes, algebraic errors
+- **Contextual hints** - Problem-specific guidance without giving away answers
+- **Problem type recognition** - Linear, quadratic, radical, rational, and more
+- **Step-by-step tracking** - Complete solution history with timestamps
+- **Performance scoring** - Grades based on correctness and hint usage
+
+### 🧮 Mathematical Capabilities
+- Expression equivalence checking (tests multiple values)
+- Equation balancing validation
+- Automatic problem type detection (9 types)
+- 50+ contextual hint templates
+- Solution completion detection
+- Statistics and progress tracking
 
 ## Supported Symbols
 

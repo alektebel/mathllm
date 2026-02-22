@@ -32,12 +32,12 @@ android {
     }
     
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11"
     }
     
     buildFeatures {
@@ -91,6 +91,9 @@ dependencies {
     
     // JSON handling
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
+    
+    // exp4j for mathematical expression evaluation (lightweight alternative to SymJa)
+    implementation("net.objecthunter:exp4j:0.4.8")
     
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")

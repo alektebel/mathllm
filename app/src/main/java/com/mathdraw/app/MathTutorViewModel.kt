@@ -29,6 +29,8 @@ class MathTutorViewModel : ViewModel() {
     val isProcessing: StateFlow<Boolean> = _isProcessing
     
     private val textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+    private val mathValidator = MathValidator()
+    private val hintGenerator = HintGenerator()
     
     /**
      * Capture and process a math problem from an image
@@ -89,9 +91,17 @@ class MathTutorViewModel : ViewModel() {
             
             _aiFeedback.value = feedback
             
-            // If step is complete and correct, move to next step
+            // If step is complete and correct, add it to history
             if (feedback.currentStepValid && isStepComplete(latexWork)) {
-                addCompletedStep(recognizedText, latexWork, true)
+                addCompletedStep(recognizedText, latexWork, true, feedback)
+            } else if (!feedback.currentStepValid && isStepComplete(latexWork)) {
+                // Track incorrect attempts
+                incrementAttemptCount()
+            }
+            
+            // Check if problem is solved
+            if (isSolutionComplete(latexWork)) {
+                markSolutionComplete()
             }
         }
     }
@@ -104,67 +114,197 @@ class MathTutorViewModel : ViewModel() {
         userWork: String,
         stepNumber: Int
     ): AIFeedback {
-        // This is a simplified version. In production, you'd use:
-        // 1. Google AI Edge (Gemini Nano) for on-device reasoning
-        // 2. Or a cloud-based math solver API
-        // 3. Or a fine-tuned SLM for math
+        // Get previous step (if exists)
+        val currentState = _solutionState.value
+        val previousStep = currentState?.userSteps?.lastOrNull()
         
-        // For now, simple pattern matching and heuristics
-        val isCorrect = validateStep(problem, userWork, stepNumber)
-        val hint = if (!isCorrect) generateHint(problem, userWork, stepNumber) else null
+        // Validate current step against previous step
+        val validation = if (previousStep != null) {
+            mathValidator.validateStep(previousStep.userWork, userWork)
+        } else {
+            // First step - validate against original problem
+            mathValidator.validateStep(problem.latexEquation, userWork)
+        }
+        
+        // Generate contextual hint if step is incorrect
+        val hint = if (!validation.isValid) {
+            hintGenerator.generateHint(
+                errorType = validation.errorType,
+                problemType = detectProblemType(problem.latexEquation),
+                currentWork = userWork,
+                stepNumber = stepNumber
+            )
+        } else {
+            // Provide encouragement and next step suggestion
+            hintGenerator.generateNextStepSuggestion(userWork, stepNumber)
+        }
+        
+        // Calculate confidence based on validation certainty
+        val confidence = if (validation.isValid) 0.9f else 0.85f
         
         return AIFeedback(
-            isOnTrack = isCorrect,
-            currentStepValid = isCorrect,
+            isOnTrack = validation.isValid,
+            currentStepValid = validation.isValid,
             subtleHint = hint,
-            confidence = 0.85f
+            suggestedNextStep = if (validation.isValid) hintGenerator.suggestNextStep(userWork) else null,
+            confidence = confidence
         )
+    }
+    
+    /**
+     * Detect problem type for contextual hints
+     */
+    private fun detectProblemType(equation: String): ProblemType {
+        val cleanEq = equation.replace("$", "").trim()
+        
+        return when {
+            cleanEq.contains("x^2") || cleanEq.contains("x²") -> ProblemType.QUADRATIC
+            cleanEq.contains("sqrt") || cleanEq.contains("√") -> ProblemType.RADICAL
+            cleanEq.contains("/") -> ProblemType.RATIONAL
+            cleanEq.contains("sin") || cleanEq.contains("cos") || cleanEq.contains("tan") -> ProblemType.TRIGONOMETRIC
+            cleanEq.contains("log") || cleanEq.contains("ln") -> ProblemType.LOGARITHMIC
+            Regex("\\d*x").containsMatchIn(cleanEq) -> ProblemType.LINEAR
+            else -> ProblemType.ARITHMETIC
+        }
     }
     
     /**
      * Simple validation logic (would be replaced with AI)
      */
     private fun validateStep(problem: MathProblem, userWork: String, stepNumber: Int): Boolean {
-        // Simplified validation - real implementation would use AI
-        // Check for common patterns, algebraic correctness, etc.
+        // Use MathValidator for real algebraic validation
+        val currentState = _solutionState.value
+        val previousStep = currentState?.userSteps?.lastOrNull()
         
-        // For demo: just check if user is writing something reasonable
-        return userWork.isNotEmpty() && userWork.length > 3
+        val validation = if (previousStep != null) {
+            mathValidator.validateStep(previousStep.userWork, userWork)
+        } else {
+            mathValidator.validateStep(problem.latexEquation, userWork)
+        }
+        
+        return validation.isValid
     }
     
     /**
      * Generate contextual hints without giving away the answer
      */
     private fun generateHint(problem: MathProblem, userWork: String, stepNumber: Int): String {
-        // This would use an SLM to generate subtle, contextual hints
-        // For now, return generic hints based on step
+        val problemType = detectProblemType(problem.latexEquation)
         
-        return when (stepNumber) {
-            0 -> "What operation should you apply to both sides first?"
-            1 -> "Remember to simplify before proceeding"
-            2 -> "Check your signs carefully"
-            else -> "Review the previous step - something doesn't look right"
-        }
+        return hintGenerator.generateHint(
+            errorType = ErrorType.WRONG_APPROACH, // Default if we can't detect specific error
+            problemType = problemType,
+            currentWork = userWork,
+            stepNumber = stepNumber
+        )
     }
     
     private fun isStepComplete(work: String): Boolean {
         // Check if the step seems complete (has equation, no trailing operators, etc.)
-        return work.contains("=") && !work.endsWith("+") && !work.endsWith("-")
+        return work.contains("=") && !work.endsWith("+") && !work.endsWith("-") && 
+               !work.endsWith("*") && !work.endsWith("/")
     }
     
-    private fun addCompletedStep(userWork: String, latexWork: String, isCorrect: Boolean) {
+    private fun addCompletedStep(userWork: String, latexWork: String, isCorrect: Boolean, feedback: AIFeedback) {
         val currentState = _solutionState.value ?: return
         
         val newStep = SolutionStep(
             stepNumber = currentState.currentStep,
             userWork = latexWork,
-            expectedWork = "", // Would be filled by AI
-            isCorrect = isCorrect
+            expectedWork = "", // Could be calculated by solving the problem
+            isCorrect = isCorrect,
+            hint = feedback.subtleHint,
+            errorType = null // No error if correct
         )
+        
+        // Calculate score based on correctness and hints used
+        val stepScore = if (isCorrect) {
+            1.0f - (currentState.hintsUsed * 0.1f).coerceAtMost(0.5f)
+        } else {
+            0.0f
+        }
+        
+        val totalScore = if (currentState.userSteps.isEmpty()) {
+            stepScore
+        } else {
+            (currentState.score * currentState.userSteps.size + stepScore) / (currentState.userSteps.size + 1)
+        }
         
         _solutionState.value = currentState.copy(
             userSteps = currentState.userSteps + newStep,
-            currentStep = currentState.currentStep + 1
+            currentStep = currentState.currentStep + 1,
+            score = totalScore,
+            hintsUsed = if (feedback.subtleHint != null) currentState.hintsUsed + 1 else currentState.hintsUsed
+        )
+    }
+    
+    private fun incrementAttemptCount() {
+        val currentState = _solutionState.value ?: return
+        _solutionState.value = currentState.copy(
+            attemptCount = currentState.attemptCount + 1
+        )
+    }
+    
+    private fun isSolutionComplete(work: String): Boolean {
+        // Check if this looks like a final answer: x = [number]
+        val cleaned = work.replace(" ", "").toLowerCase()
+        return cleaned.matches(Regex("x=[-]?[0-9.]+(/[-]?[0-9.]+)?"))
+    }
+    
+    private fun markSolutionComplete() {
+        val currentState = _solutionState.value ?: return
+        
+        _solutionState.value = currentState.copy(
+            isComplete = true,
+            endTime = System.currentTimeMillis()
+        )
+        
+        // Generate completion feedback
+        _aiFeedback.value = AIFeedback(
+            isOnTrack = true,
+            currentStepValid = true,
+            subtleHint = generateCompletionMessage(currentState),
+            confidence = 1.0f
+        )
+    }
+    
+    private fun generateCompletionMessage(state: SolutionState): String {
+        val timeTaken = (System.currentTimeMillis() - state.startTime) / 1000 // seconds
+        val score = (state.score * 100).toInt()
+        
+        return when {
+            score >= 90 -> "Excellent work! You solved it with minimal hints in ${timeTaken}s."
+            score >= 70 -> "Great job! You completed the problem successfully."
+            score >= 50 -> "Good effort! You reached the solution."
+            else -> "You got there! Keep practicing to improve your efficiency."
+        }
+    }
+    
+    /**
+     * Get solution history for review
+     */
+    fun getSolutionHistory(): List<SolutionStep> {
+        return _solutionState.value?.userSteps ?: emptyList()
+    }
+    
+    /**
+     * Get solution statistics
+     */
+    fun getSolutionStats(): SolutionStats? {
+        val state = _solutionState.value ?: return null
+        val timeTaken = if (state.endTime != null) {
+            state.endTime - state.startTime
+        } else {
+            System.currentTimeMillis() - state.startTime
+        }
+        
+        return SolutionStats(
+            totalSteps = state.userSteps.size,
+            correctSteps = state.userSteps.count { it.isCorrect },
+            incorrectAttempts = state.attemptCount,
+            hintsUsed = state.hintsUsed,
+            timeTaken = timeTaken,
+            score = state.score
         )
     }
     

@@ -23,10 +23,11 @@ enum class Difficulty {
 data class SolutionStep(
     val stepNumber: Int,
     val userWork: String,  // What the user wrote
-    val expectedWork: String,  // What should be written
+    val expectedWork: String = "",  // What should be written (optional)
     val isCorrect: Boolean,
     val hint: String? = null,
-    val errorType: ErrorType? = null
+    val errorType: ErrorType? = null,
+    val timestamp: Long = System.currentTimeMillis()
 )
 
 enum class ErrorType {
@@ -56,5 +57,21 @@ data class SolutionState(
     val userSteps: List<SolutionStep> = emptyList(),
     val currentStep: Int = 0,
     val isComplete: Boolean = false,
-    val score: Float = 0f
+    val score: Float = 0f,
+    val startTime: Long = System.currentTimeMillis(),
+    val endTime: Long? = null,
+    val attemptCount: Int = 0,  // Number of incorrect attempts
+    val hintsUsed: Int = 0
+)
+
+/**
+ * Statistics about a solution attempt
+ */
+data class SolutionStats(
+    val totalSteps: Int,
+    val correctSteps: Int,
+    val incorrectAttempts: Int,
+    val hintsUsed: Int,
+    val timeTaken: Long,  // milliseconds
+    val score: Float
 )
